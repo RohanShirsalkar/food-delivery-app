@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  phone     String    @unique
+  email     String?   @unique
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Restaurant {
+  id        String     @id @default(uuid())
+  owner     Owner      @relation(fields: [owner_id], references: [id])
+  owner_id  String
+  name      String
+  address   String
+  city      String
+  order     Order[]
+  menu      MenuItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime?  @updatedAt
+}
+
+model Owner {
+  id          String       @id @default(uuid())
+  phone       String       @unique
+  email       String?      @unique
+  password    String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime?    @updatedAt
+  restaurants Restaurant[]
+}
+
+model MenuItem {
+  id           String      @id @default(uuid())
+  name         String
+  description  String
+  price        Int
+  available    Boolean
+  cart         Cart[]
+  order        Order[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime?   @updatedAt
+  Restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
+  restaurantId String?
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  user_id   String
+  items     MenuItem[]
+  total     Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime?  @updatedAt
+}
+
+model Order {
+  id            String        @id @default(uuid())
+  user_id       String
+  restaurant    Restaurant    @relation(fields: [restaurant_id], references: [id])
+  items         MenuItem[]
+  total         Int
+  status        Status        @default(PENDING)
+  paymentMethod PaymentMethod
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime?     @updatedAt
+  restaurant_id String
+}
+
+enum Status {
+  PENDING
+  COMPLETED
+  CANCELED
+}
+
+enum PaymentMethod {
+  CASH
+  DEBIT_CARD
+  RAZORPAY
+}
