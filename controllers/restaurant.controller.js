@@ -42,13 +42,13 @@ const findByOwnerId = async (req, res, next) => {
   }
 };
 
-const findByCity = async (req, res, next) => {
-  const { city } = req.params;
+const findByCityId = async (req, res, next) => {
+  const { cityId } = req.params;
   try {
-    if (!city) {
+    if (!cityId) {
       return next(createError(422, "City is required"));
     }
-    const restaurants = await db.restaurant.findUnique({ where: { city } });
+    const restaurants = await db.restaurant.findMany({ where: { cityId } });
     if (!restaurants) {
       return next(createError(422, "Restaurants not found"));
     }
@@ -76,4 +76,4 @@ const findById = async (req, res, next) => {
   }
 };
 
-module.exports = { findByOwnerId, findByCity, findById, create };
+module.exports = { findByOwnerId, findByCityId, findById, create };

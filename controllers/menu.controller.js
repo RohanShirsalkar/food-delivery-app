@@ -33,8 +33,18 @@ const createMenuItem = async (req, res, next) => {
   }
 };
 
-// Meghana
-// find menu all items
-// find menu items by restaurant id. reference: const restaurants = await db.restaurant.findUnique({ where: { city: city } });
+const findMenuItemsByRestaurantId = async (req, res, next) => {
+  const { restaurantId } = req.params;
+  try {
+    if (!restaurantId) {
+      return next(createError(422, "Restaurant id is required."));
+    }
+    const menuItems = await db.menuItem.findMany({ where: { restaurantId } });
+    res.send({ message: "Fetched successfully", data: menuItems });
+  } catch (error) {
+    console.log(error);
+    next(createError(500, "Internal server error"));
+  }
+};
 
-module.exports = { createMenuItem };
+module.exports = { createMenuItem, findMenuItemsByRestaurantId };

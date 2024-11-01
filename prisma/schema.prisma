@@ -12,6 +12,7 @@ model User {
   phone     String    @unique
   email     String?   @unique
   password  String
+  cart      Cart?
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
 }
@@ -45,21 +46,33 @@ model MenuItem {
   description  String
   price        Int
   available    Boolean
-  cart         Cart[]
   order        Order[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime?   @updatedAt
   Restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
   restaurantId String?
+  cartItem     CartItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime?   @updatedAt
+  orderItem    OrderItem?
 }
 
 model Cart {
   id        String     @id @default(uuid())
-  user_id   String
-  items     MenuItem[]
   total     Int        @default(0)
+  user      User       @relation(fields: [userId], references: [id])
+  userId    String     @unique
+  cartItem  CartItem[]
   createdAt DateTime   @default(now())
   updatedAt DateTime?  @updatedAt
+}
+
+model CartItem {
+  id         String   @id @default(uuid())
+  cart       Cart     @relation(fields: [cartId], references: [id])
+  cartId     String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  menuItemId String
+  quantity   Int
+  price      Int
 }
 
 model Order {
@@ -73,6 +86,17 @@ model Order {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime?     @updatedAt
   restaurant_id String
+  orderItem     OrderItem?
+}
+
+model OrderItem {
+  id         String    @id @default(uuid())
+  order      Order?    @relation(fields: [orderId], references: [id])
+  orderId    String    @unique
+  item       MenuItem? @relation(fields: [menuItemId], references: [id])
+  menuItemId String?   @unique
+  quantity   Int?
+  price      Int
 }
 
 enum Status {

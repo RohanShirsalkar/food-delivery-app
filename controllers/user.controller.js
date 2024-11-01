@@ -3,16 +3,22 @@ const createError = require("http-errors");
 
 const db = new PrismaClient();
 
+// Creating a new user will also create a new cart and associated with it in the database.
 const registerUser = async (req, res, next) => {
-  const { name, email, password } = req.body;
+  const { phone, email, password } = req.body;
   try {
-    if (!name || !email || !password) {
+    if (!phone || !email || !password) {
       return next(createError(422, "Missing information"));
     }
-    const owner = await db.owner.create({ data: { name, email, password } });
+    const user = await db.user.create({
+      data: { phone, email, password },
+    });
+    const cart = await db.cart.create({
+      data: { userId: user.id },
+    });
     res.send({
       message: "User registered successfully",
-      owner: owner,
+      user: user,
     });
   } catch (error) {
     console.log(error);
@@ -20,7 +26,25 @@ const registerUser = async (req, res, next) => {
   }
 };
 
-// Meghana
-// find user by id
+const findById = async (req, res, next) => {
+  const { id } = req.params;
+  console.log(id);
+  try {
+    if (!id) {
+      return next(createError(422, "Id is required"));
+    }
+    const user = await db.user.findUnique({
+      where: { id },
+      include: { cart: true },
+    });
+    if (!user) {
+      return next(createError(422, "user not found"));
+    }
+    res.send({ message: "User found successfully", data: user });
+  } catch (error) {
+    console.log(error);
+    next(createError(500, "Internal server error"));
+  }
+};
 
-module.exports = { registerUser };
+module.exports = { registerUser, findById };
