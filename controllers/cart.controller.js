@@ -26,7 +26,7 @@ const findCartItemsByCartId = async (req, res, next) => {
     if (!cart) {
       return next(createError(422, "No such cart found"));
     }
-    const cartItems = await db.cartItem.findMany({ where: { id } });
+    const cartItems = await db.cartItem.findMany({ where: { cartId } });
     if (!cartItems) {
       return next(createError(422, "No such cart item found"));
     }
