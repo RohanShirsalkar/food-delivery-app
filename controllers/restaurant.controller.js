@@ -77,4 +77,47 @@ const findById = async (req, res, next) => {
   }
 };
 
-module.exports = { findByOwnerId, findByCityId, findById, create };
+// @name Search restaurants by the item type.
+// @desc Find all restaurant that have a specific item type in their menu.
+const findByItemType = async (req, res, next) => {
+  const { itemType } = req.params;
+  try {
+    if (!itemType) {
+      return next(createError(422, "Item type is required."));
+    }
+    const restaurants = await db.restaurant.findMany({
+      include: { menu: { where: { type: itemType } } },
+      where: { menu: { some: { type: itemType } } },
+    });
+    res.send({ message: "Restaurants found successfully", data: restaurants });
+  } catch (error) {
+    console.log(error);
+    next(createError(500, "Internal server error"));
+  }
+};
+
+const findBySearchQuery = async (req, res, next) => {
+  const { query } = req.params;
+  try {
+    if (!query) {
+      return next(createError(422, "Item type is required."));
+    }
+    const restaurants = await db.restaurant.findMany({
+      where: { menu: { some: { name: { contains: query } } } },
+      include: { menu: { where: { name: { contains: query } } } },
+    });
+    res.send({ message: "Restaurants found successfully", data: restaurants });
+  } catch (error) {
+    console.log(error);
+    next(createError(500, "Internal server error"));
+  }
+};
+
+module.exports = {
+  findByOwnerId,
+  findByCityId,
+  findById,
+  create,
+  findByItemType,
+  findBySearchQuery,
+};

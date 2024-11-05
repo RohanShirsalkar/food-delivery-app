@@ -44,6 +44,7 @@ model MenuItem {
   id           String      @id @default(uuid())
   name         String
   description  String
+  type         String?
   price        Int
   available    Boolean
   order        Order[]
