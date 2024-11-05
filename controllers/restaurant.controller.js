@@ -13,7 +13,7 @@ const create = async (req, res, next) => {
       return next(createError(422, "Name and city are required"));
     }
     const restaurant = await db.restaurant.create({
-      data: { ownerId, name, address, city },
+      data: { owner_id: ownerId, name, address, city },
     });
     res.send({
       message: "Restaurant created successfully",
@@ -31,7 +31,9 @@ const findByOwnerId = async (req, res, next) => {
     if (!ownerId) {
       return next(createError(422, "Owner id is required"));
     }
-    const restaurants = await db.restaurant.findUnique({ where: { ownerId } });
+    const restaurants = await db.restaurant.findMany({
+      where: { owner_id: ownerId },
+    });
     if (!restaurants) {
       return next(createError(422, "Restaurants not found"));
     }
@@ -48,10 +50,9 @@ const findByCityId = async (req, res, next) => {
     if (!cityId) {
       return next(createError(422, "City is required"));
     }
-    const restaurants = await db.restaurant.findMany({ where: { cityId } });
-    if (!restaurants) {
-      return next(createError(422, "Restaurants not found"));
-    }
+    const restaurants = await db.restaurant.findMany({
+      where: { city: cityId },
+    });
     res.send({ message: "Restaurants found successfully", data: restaurants });
   } catch (error) {
     console.log(error);

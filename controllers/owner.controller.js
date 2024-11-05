@@ -4,12 +4,26 @@ const createError = require("http-errors");
 const db = new PrismaClient();
 
 const registerOwner = async (req, res, next) => {
-  const { name, email, password } = req.body;
+  const { phone, email, password } = req.body;
   try {
-    if (!name || !email || !password) {
+    if (!phone || !email || !password) {
       return next(createError(422, "Missing information"));
     }
-    const owner = await db.owner.create({ data: { name, email, password } });
+    const ownerWithEmailExists = await db.owner.findUnique({
+      where: { email },
+    });
+    const ownerWithPhoneExists = await db.owner.findUnique({
+      where: { phone },
+    });
+    if (ownerWithEmailExists) {
+      return next(createError(422, "Email already exists in the database."));
+    }
+    if (ownerWithPhoneExists) {
+      return next(
+        createError(422, "Phone number already exists in the database.")
+      );
+    }
+    const owner = await db.owner.create({ data: { phone, email, password } });
     return res.send({
       message: "Owner registered successfully",
       owner: owner,

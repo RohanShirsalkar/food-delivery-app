@@ -3,6 +3,8 @@ const createError = require("http-errors");
 
 const db = new PrismaClient();
 
+// @desc Creates new Cart Item
+// note: this is add to cart function for user to add items into their shopping Cart.
 const createCartItem = async (req, res, next) => {
   const { cartId, itemId, quantity, price } = req.body;
   try {

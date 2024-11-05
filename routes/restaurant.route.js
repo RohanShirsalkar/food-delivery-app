@@ -9,6 +9,6 @@ const {
 router.post("/", create);
 router.get("/city/:cityId", findByCityId);
 router.get("/:id", findById);
-router.get("/owner/:id", findByOwnerId);
+router.get("/owner/:ownerId", findByOwnerId);
 
 module.exports = router;
