@@ -1,4 +1,5 @@
 const express = require("express");
+const createError = require("http-errors");
 const app = new express();
 const port = 3012;
 
@@ -20,6 +21,7 @@ app.use((err, req, res, next) => {
   res.send({
     status: err.status || 500,
     message: err.message,
+    error: err.error,
   });
 });
 

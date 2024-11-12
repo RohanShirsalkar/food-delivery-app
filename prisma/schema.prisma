@@ -16,20 +16,23 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
   orders    Order[]
+  address   Address[]
 }
 
 model Restaurant {
-  id        String     @id @default(uuid())
-  owner     Owner      @relation(fields: [owner_id], references: [id])
-  owner_id  String
-  name      String
-  address   String
-  city      String
-  order     Order[]
-  menu      MenuItem[]
-  coupons   Coupon[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime?  @updatedAt
+  id         String      @id @default(uuid())
+  owner      Owner       @relation(fields: [owner_id], references: [id])
+  owner_id   String
+  name       String
+  address    String
+  city       String
+  order      Order[]
+  menu       MenuItem[]
+  coupons    Coupon[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime?   @updatedAt
 }
 
 model Owner {
@@ -53,9 +56,9 @@ model MenuItem {
   Restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
   restaurantId String?
   cartItem     CartItem[]
+  orderItem    OrderItem[]
   createdAt    DateTime    @default(now())
   updatedAt    DateTime?   @updatedAt
-  orderItem    OrderItem?
 }
 
 model Cart {
@@ -69,13 +72,15 @@ model Cart {
 }
 
 model CartItem {
-  id         String   @id @default(uuid())
-  cart       Cart     @relation(fields: [cartId], references: [id])
-  cartId     String
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
-  menuItemId String
-  quantity   Int
-  price      Int
+  id           String      @id @default(uuid())
+  cart         Cart        @relation(fields: [cartId], references: [id])
+  cartId       String
+  menuItem     MenuItem    @relation(fields: [menuItemId], references: [id])
+  menuItemId   String
+  quantity     Int
+  price        Int
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
+  restaurantId String?
 }
 
 model Order {
@@ -100,13 +105,15 @@ model Order {
 }
 
 model OrderItem {
-  id         String    @id @default(uuid())
-  order      Order?    @relation(fields: [orderId], references: [id])
-  orderId    String    @unique
-  item       MenuItem? @relation(fields: [menuItemId], references: [id])
-  menuItemId String?   @unique
-  quantity   Int?
-  price      Int
+  id           String      @id @default(uuid())
+  order        Order?      @relation(fields: [orderId], references: [id])
+  orderId      String      @unique
+  menuItem     MenuItem?   @relation(fields: [menuItemId], references: [id])
+  menuItemId   String?
+  quantity     Int?
+  price        Int
+  Restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
+  restaurantId String?
 }
 
 model Address {
@@ -117,6 +124,8 @@ model Address {
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
   orders    Order[]
+  user      User?     @relation(fields: [userId], references: [id])
+  userId    String?
 }
 
 model Coupon {

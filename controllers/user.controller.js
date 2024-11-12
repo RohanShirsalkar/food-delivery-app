@@ -28,14 +28,14 @@ const registerUser = async (req, res, next) => {
 
 const findById = async (req, res, next) => {
   const { id } = req.params;
-  console.log(id);
   try {
     if (!id) {
       return next(createError(422, "Id is required"));
     }
+    // do not include cart items
     const user = await db.user.findUnique({
       where: { id },
-      include: { cart: true },
+      include: { cart: { include: { cartItem: true } } },
     });
     if (!user) {
       return next(createError(422, "user not found"));

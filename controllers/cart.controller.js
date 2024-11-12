@@ -5,15 +5,27 @@ const { calculateCartTotal } = require("../utils/app.utils");
 const db = new PrismaClient();
 
 // @desc (Add To Cart) Creates new Cart Item and updates total price
+// @rule Do not add item to cart if item from some other restaurant already exists.
+// @rule Only add item if it belongs to the same restaurant.
 const createCartItem = async (req, res, next) => {
-  const { cartId, menuItemId, quantity, price } = req.body;
+  const { cartId, menuItemId, restaurantId, quantity } = req.body;
   try {
-    if (!cartId || !menuItemId || !price || !quantity) {
+    // find cart items with cart id
+    // if cart item already exists then increment quantity else create new one.
+    // if cart item belongs to same restaurant then add item to cart else throw error.
+    // if cart is empty add item to cart.
+    if (!cartId || !menuItemId || !restaurantId || !quantity) {
       return next(createError(422, "Invalid input data"));
     }
-    const cart = await db.cart.findUnique({ where: { id: cartId } });
+    const cart = await db.cart.findUnique({
+      where: { id: cartId },
+      include: { cartItem: true },
+    });
     const menuItem = await db.menuItem.findUnique({
       where: { id: menuItemId },
+    });
+    const restaurant = await db.restaurant.findUnique({
+      where: { id: restaurantId },
     });
     if (!cart) {
       return next(createError(422, "Cart not found"));
@@ -21,12 +33,18 @@ const createCartItem = async (req, res, next) => {
     if (!menuItem) {
       return next(createError(422, "Menu item not found"));
     }
+    if (!restaurant) {
+      return next(createError(422, "Restaurant not found"));
+    }
+    // if(cart.cartItem.length > 0){
+    // }
     const cartItem = await db.cartItem.create({
       data: {
         cartId,
         menuItemId,
+        restaurantId,
         quantity,
-        price,
+        price: menuItem.price,
       },
     });
     const cartItems = await db.cartItem.findMany({ where: { cartId } });
