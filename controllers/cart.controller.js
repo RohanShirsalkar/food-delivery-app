@@ -10,10 +10,6 @@ const db = new PrismaClient();
 const createCartItem = async (req, res, next) => {
   const { cartId, menuItemId, restaurantId, quantity } = req.body;
   try {
-    // find cart items with cart id
-    // if cart item already exists then increment quantity else create new one.
-    // if cart item belongs to same restaurant then add item to cart else throw error.
-    // if cart is empty add item to cart.
     if (!cartId || !menuItemId || !restaurantId || !quantity) {
       return next(createError(422, "Invalid input data"));
     }
@@ -36,26 +32,62 @@ const createCartItem = async (req, res, next) => {
     if (!restaurant) {
       return next(createError(422, "Restaurant not found"));
     }
-    // if(cart.cartItem.length > 0){
-    // }
-    const cartItem = await db.cartItem.create({
-      data: {
-        cartId,
-        menuItemId,
-        restaurantId,
-        quantity,
-        price: menuItem.price,
-      },
-    });
-    const cartItems = await db.cartItem.findMany({ where: { cartId } });
-    const updatedCart = await db.cart.update({
-      where: { id: cartId },
-      data: {
-        total: calculateCartTotal(cartItems),
-      },
-      include: { cartItem: true },
-    });
-    res.send({ message: "Cart item created", data: updatedCart });
+    let firstCartItem = cart?.cartItem[0];
+    if (!firstCartItem) {
+      const cartItem = await db.cartItem.create({
+        data: {
+          cartId,
+          menuItemId,
+          restaurantId,
+          quantity,
+          price: menuItem.price,
+        },
+      });
+      const cartItems = await db.cartItem.findMany({ where: { cartId } });
+      const updatedCart = await db.cart.update({
+        where: { id: cartId },
+        data: {
+          total: calculateCartTotal(cartItems),
+        },
+        include: { cartItem: true },
+      });
+      res.send({ message: "Cart item created", data: updatedCart });
+    } else if (firstCartItem?.restaurantId !== restaurantId) {
+      return res.send({
+        message: "This item belongs to other restaurant",
+        cartItemExists: true,
+      });
+    } else {
+      cart.cartItem.forEach(async (item, index) => {
+        if (item.menuItemId === menuItemId) {
+          const updatedCartItem = await db.cartItem.update({
+            where: { id: item.id },
+            data: { quantity: item.quantity + quantity },
+          });
+          const cartItems = await db.cartItem.findMany({ where: { cartId } });
+          const updatedCart = await db.cart.update({
+            where: { id: cartId },
+            data: {
+              total: calculateCartTotal(cartItems),
+            },
+            include: { cartItem: true },
+          });
+          res.send({ message: "Cart item created", data: updatedCart });
+        } else if (index === cart.cartItem.length - 1) {
+          const cartItem = await db.cartItem.create({
+            data: {
+              cartId,
+              menuItemId,
+              restaurantId,
+              quantity,
+              price: menuItem.price,
+            },
+          });
+          const cart = await db.cart.findFirst({ where: { id: cartId } });
+          res.send({ message: "Cart item created", data: cart });
+        }
+      });
+    }
   } catch (error) {
     console.log(error);
     next(createError(500, "Internal server error"));
