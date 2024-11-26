@@ -66,7 +66,10 @@ const findById = async (req, res, next) => {
     if (!id) {
       return next(createError(422, "Id is required"));
     }
-    const restaurant = await db.restaurant.findUnique({ where: { id } });
+    const restaurant = await db.restaurant.findUnique({
+      where: { id },
+      include: { menu: true },
+    });
     if (!restaurant) {
       return next(createError(422, "Restaurant not found"));
     }

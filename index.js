@@ -1,9 +1,12 @@
 const express = require("express");
 const createError = require("http-errors");
 const app = new express();
+const cors = require("cors");
+
 const port = 3012;
 
 app.use(express.json());
+app.use(cors());
 
 app.use("/api/user", require("./routes/user.route"));
 app.use("/api/owner", require("./routes/owner.route"));

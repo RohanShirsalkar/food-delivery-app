@@ -83,7 +83,10 @@ const createCartItem = async (req, res, next) => {
               price: menuItem.price,
             },
           });
-          const cart = await db.cart.findFirst({ where: { id: cartId } });
+          const cart = await db.cart.findFirst({
+            where: { id: cartId },
+            include: { cartItem: true },
+          });
           res.send({ message: "Cart item created", data: cart });
         }
       });
@@ -175,6 +178,21 @@ const deleteCartItemById = async (req, res, next) => {
   }
 };
 
+const deleteAllCartItemsByCartId = async (req, res, next) => {
+  const { cartId } = req.params;
+  try {
+    const response = await db.cartItem.deleteMany({ where: { cartId } });
+    const updatedCart = await db.cart.findFirst({
+      where: { id: cartId },
+      include: { cartItem: true },
+    });
+    res.send({ message: "Deleted all items in the Cart", data: updatedCart });
+  } catch (error) {
+    console.log(error);
+    next(createError(500, "Internal server error"));
+  }
+};
+
 const updateCartItemById = async (req, res, next) => {
   const { id } = req.params;
   const { quantity } = req.body;
@@ -212,4 +230,5 @@ module.exports = {
   findCartItemById,
   findCartItemsByCartId,
   findCartByUserId,
+  deleteAllCartItemsByCartId,
 };
