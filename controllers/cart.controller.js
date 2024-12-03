@@ -34,6 +34,7 @@ const createCartItem = async (req, res, next) => {
     }
     let firstCartItem = cart?.cartItem[0];
     if (!firstCartItem) {
+      // if there is no existing items then create a new one and update total price
       const cartItem = await db.cartItem.create({
         data: {
           cartId,
@@ -58,8 +59,10 @@ const createCartItem = async (req, res, next) => {
         cartItemExists: true,
       });
     } else {
+      // if an item already exists in the same Cart
       cart.cartItem.forEach(async (item, index) => {
         if (item.menuItemId === menuItemId) {
+          // if the item is same as the new one then update quantity
           const updatedCartItem = await db.cartItem.update({
             where: { id: item.id },
             data: { quantity: item.quantity + quantity },
@@ -74,6 +77,8 @@ const createCartItem = async (req, res, next) => {
           });
           res.send({ message: "Cart item created", data: updatedCart });
         } else if (index === cart.cartItem.length - 1) {
+          // loop through entire array
+          // if the item is not same as new one then create a new cartItem and update total price
           const cartItem = await db.cartItem.create({
             data: {
               cartId,
@@ -83,11 +88,19 @@ const createCartItem = async (req, res, next) => {
               price: menuItem.price,
             },
           });
-          const cart = await db.cart.findFirst({
+          // const cart = await db.cart.findFirst({
+          //   where: { id: cartId },
+          //   include: { cartItem: true },
+          // });
+          const cartItems = await db.cartItem.findMany({ where: { cartId } });
+          const updatedCart = await db.cart.update({
             where: { id: cartId },
+            data: {
+              total: calculateCartTotal(cartItems),
+            },
             include: { cartItem: true },
           });
-          res.send({ message: "Cart item created", data: cart });
+          res.send({ message: "Cart item created", data: updatedCart });
         }
       });
     }
@@ -231,4 +244,5 @@ module.exports = {
   findCartItemsByCartId,
   findCartByUserId,
   deleteAllCartItemsByCartId,
+  updateCartItemById,
 };

@@ -101,19 +101,21 @@ model Order {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime?     @updatedAt
   restaurant_id   String
-  orderItem       OrderItem?
+  orderItem       OrderItem[]
 }
 
 model OrderItem {
   id           String      @id @default(uuid())
-  order        Order?      @relation(fields: [orderId], references: [id])
-  orderId      String      @unique
-  menuItem     MenuItem?   @relation(fields: [menuItemId], references: [id])
-  menuItemId   String?
+  order        Order[]
+  // order        Order       @relation(fields: [orderId], references: [id])
+  // orderId      String?     @default("")
+  // menuItem     MenuItem?   @relation(fields: [menuItemId], references: [id])
+  // menuItemId   String?
+  menuItem     MenuItem[]
   quantity     Int?
   price        Int
   Restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
-  restaurantId String?
+  restaurantId String
 }
 
 model Address {

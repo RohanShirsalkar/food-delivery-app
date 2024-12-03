@@ -46,6 +46,20 @@ const findCouponsByRestaurantId = async (req, res, next) => {
   }
 };
 
+const findCouponByCode = async (req, res, next) => {
+  const { code } = req.params;
+  try {
+    if (!code) {
+      return next(createError(428, "Coupon Code is required"));
+    }
+    let coupon = await db.coupon.findFirst({ where: { code: code } });
+    res.send({ message: "Found Coupon", data: coupon });
+  } catch (error) {
+    console.log(error);
+    next(createError(500, "Internal server Error"));
+  }
+};
+
 const findById = async (req, res, next) => {
   const { id } = req.params;
   try {
@@ -60,4 +74,9 @@ const findById = async (req, res, next) => {
   }
 };
 
-module.exports = { create, findCouponsByRestaurantId, findById };
+module.exports = {
+  create,
+  findCouponsByRestaurantId,
+  findById,
+  findCouponByCode,
+};

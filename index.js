@@ -14,6 +14,8 @@ app.use("/api/restaurant", require("./routes/restaurant.route"));
 app.use("/api/menu", require("./routes/menu.route"));
 app.use("/api/cart", require("./routes/cart.route"));
 app.use("/api/order", require("./routes/order.route"));
+app.use("/api/address", require("./routes/address.route"));
+app.use("/api/coupon", require("./routes/coupon.route"));
 
 app.use((req, res, next) => {
   next(createError.NotFound());

@@ -42,7 +42,7 @@ const createOrder = async (req, res, next) => {
         user_id: userId,
       },
       include: {
-        items: true,
+        orderItem: true,
         coupon: true,
         address: true,
         restaurant: true,
@@ -53,8 +53,10 @@ const createOrder = async (req, res, next) => {
       cart?.cartItem.map((item) => {
         return db.orderItem.create({
           data: {
-            orderId: order.id,
-            menuItemId: item.menuItemId,
+            // orderId: order.id,
+            order: { connect: { id: order.id } },
+            // menuItemId: item.menuItemId,
+            menuItem: { connect: { id: item.menuItemId } },
             restaurantId: item.restaurantId,
             quantity: item.quantity,
             price: item.price,
@@ -75,13 +77,18 @@ const createOrder = async (req, res, next) => {
           user: true,
         },
       });
-      const updatedCart = await db.cartItem.deleteMany({
+      var deletedCartItems = await db.cartItem.deleteMany({
         where: { cartId: cart.id },
+      });
+      var updatedCart = await db.cart.update({
+        where: { id: cart.id },
+        data: { total: 0 },
+        include: { cartItem: true },
       });
     }
     res.send({
       message: "Order created successfully",
-      data: updatedOrder,
+      data: { updatedOrder, updatedCart },
     });
   } catch (error) {
     console.log(error);
@@ -114,6 +121,25 @@ const getOrdersByUserId = async (req, res, next) => {
   }
 };
 
+const findOrderById = async (req, res, next) => {
+  const { orderId } = req.params;
+  try {
+    if (!orderId) {
+      return next(
+        createError(422, "Missing required parameters in the request body.")
+      );
+    }
+    const order = await db.order.findUnique({
+      where: { id: orderId },
+      include: { orderItem: true, address: true, restaurant: true },
+    });
+    res.send({ message: "Order fetched successfully", data: order });
+  } catch (error) {
+    console.log(error);
+    next(createError(500, { message: "Internal server error", error }));
+  }
+};
+
 // @desc calculate order amount after delivery charges and coupons are applied.
 const calculateTotal = async ({ couponId, cartTotal, deliveryCharges }) => {
   let total = 0;
@@ -137,4 +163,4 @@ const calculateTotal = async ({ couponId, cartTotal, deliveryCharges }) => {
   return total;
 };
 
-module.exports = { createOrder, getOrdersByUserId };
+module.exports = { createOrder, getOrdersByUserId, findOrderById };
