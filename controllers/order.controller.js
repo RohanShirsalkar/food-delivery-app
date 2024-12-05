@@ -107,7 +107,7 @@ const getOrdersByUserId = async (req, res, next) => {
     const orders = await db.order.findMany({
       where: { user_id: userId },
       include: {
-        items: true,
+        orderItem: true,
         coupon: true,
         address: true,
         restaurant: true,
