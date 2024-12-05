@@ -89,8 +89,8 @@ const findByItemType = async (req, res, next) => {
       return next(createError(422, "Item type is required."));
     }
     const restaurants = await db.restaurant.findMany({
-      include: { menu: { where: { type: itemType } } },
-      where: { menu: { some: { type: itemType } } },
+      include: { menu: { where: { name: { contains: itemType } } } },
+      where: { menu: { some: { name: { contains: itemType } } } },
     });
     res.send({ message: "Restaurants found successfully", data: restaurants });
   } catch (error) {
@@ -106,10 +106,19 @@ const findBySearchQuery = async (req, res, next) => {
       return next(createError(422, "Item type is required."));
     }
     const restaurants = await db.restaurant.findMany({
-      where: { menu: { some: { name: { contains: query } } } },
-      include: { menu: { where: { name: { contains: query } } } },
+      where: { name: { contains: query } },
     });
-    res.send({ message: "Restaurants found successfully", data: restaurants });
+    const menuItems = await db.menuItem.findMany({
+      where: { name: { contains: query } },
+    });
+    // const restaurantAndMenuItems = await db.restaurant.findMany({
+    //   where: { menu: { some: { name: { contains: query } } } },
+    //   include: { menu: { where: { name: { contains: query } } } },
+    // });
+    res.send({
+      message: "Restaurants found successfully",
+      data: { restaurants: restaurants, menuItems: menuItems },
+    });
   } catch (error) {
     console.log(error);
     next(createError(500, "Internal server error"));
