@@ -5,9 +5,9 @@ const db = new PrismaClient();
 
 // Creating a new user will also create a new cart and associated with it in the database.
 const registerUser = async (req, res, next) => {
-  const { phone, email, password } = req.body;
+  const { phone, email, password, name } = req.body;
   try {
-    if (!phone || !email || !password) {
+    if (!phone || !email || !password || !name) {
       return next(createError(422, "Missing information"));
     }
     const userExists = await db.user.findFirst({
@@ -19,7 +19,7 @@ const registerUser = async (req, res, next) => {
       );
     } else {
       const user = await db.user.create({
-        data: { phone, email, password },
+        data: { phone, email, password, name },
       });
       const cart = await db.cart.create({
         data: { userId: user.id },

@@ -53,11 +53,10 @@ const createOrder = async (req, res, next) => {
       cart?.cartItem.map((item) => {
         return db.orderItem.create({
           data: {
-            // orderId: order.id,
             order: { connect: { id: order.id } },
-            // menuItemId: item.menuItemId,
             menuItem: { connect: { id: item.menuItemId } },
             restaurantId: item.restaurantId,
+            name: item.name,
             quantity: item.quantity,
             price: item.price,
           },

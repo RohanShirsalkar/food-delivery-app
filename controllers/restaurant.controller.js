@@ -4,7 +4,7 @@ const createError = require("http-errors");
 const db = new PrismaClient();
 
 const create = async (req, res, next) => {
-  const { ownerId, name, address, city } = req.body;
+  const { ownerId, name, address, city, deliveryTime } = req.body;
   try {
     if (!ownerId) {
       return next(createError(422, "Owner id is required"));
@@ -13,7 +13,7 @@ const create = async (req, res, next) => {
       return next(createError(422, "Name and city are required"));
     }
     const restaurant = await db.restaurant.create({
-      data: { owner_id: ownerId, name, address, city },
+      data: { owner_id: ownerId, name, address, city, deliveryTime, rating: 0 },
     });
     res.send({
       message: "Restaurant created successfully",
@@ -100,21 +100,18 @@ const findByItemType = async (req, res, next) => {
 };
 
 const findBySearchQuery = async (req, res, next) => {
-  const { query } = req.params;
+  const { query, location } = req.params;
   try {
     if (!query) {
       return next(createError(422, "Item type is required."));
     }
     const restaurants = await db.restaurant.findMany({
-      where: { name: { contains: query } },
+      where: { name: { contains: query }, city: location },
     });
     const menuItems = await db.menuItem.findMany({
-      where: { name: { contains: query } },
+      // include: { Restaurant: true },
+      where: { name: { contains: query }, Restaurant: { city: location } },
     });
-    // const restaurantAndMenuItems = await db.restaurant.findMany({
-    //   where: { menu: { some: { name: { contains: query } } } },
-    //   include: { menu: { where: { name: { contains: query } } } },
-    // });
     res.send({
       message: "Restaurants found successfully",
       data: { restaurants: restaurants, menuItems: menuItems },

@@ -9,6 +9,7 @@ datasource db {
 
 model User {
   id        String    @id @default(uuid())
+  name      String
   phone     String    @unique
   email     String?   @unique
   password  String
@@ -20,19 +21,21 @@ model User {
 }
 
 model Restaurant {
-  id         String      @id @default(uuid())
-  owner      Owner       @relation(fields: [owner_id], references: [id])
-  owner_id   String
-  name       String
-  address    String
-  city       String
-  order      Order[]
-  menu       MenuItem[]
-  coupons    Coupon[]
-  cartItems  CartItem[]
-  orderItems OrderItem[]
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime?   @updatedAt
+  id           String      @id @default(uuid())
+  owner        Owner       @relation(fields: [owner_id], references: [id])
+  owner_id     String
+  name         String
+  address      String
+  city         String
+  rating       Int         @default(0)
+  deliveryTime Int         @default(30)
+  order        Order[]
+  menu         MenuItem[]
+  coupons      Coupon[]
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime?   @updatedAt
 }
 
 model Owner {
@@ -75,6 +78,7 @@ model CartItem {
   id           String      @id @default(uuid())
   cart         Cart        @relation(fields: [cartId], references: [id])
   cartId       String
+  name         String
   menuItem     MenuItem    @relation(fields: [menuItemId], references: [id])
   menuItemId   String
   quantity     Int
@@ -107,10 +111,7 @@ model Order {
 model OrderItem {
   id           String      @id @default(uuid())
   order        Order[]
-  // order        Order       @relation(fields: [orderId], references: [id])
-  // orderId      String?     @default("")
-  // menuItem     MenuItem?   @relation(fields: [menuItemId], references: [id])
-  // menuItemId   String?
+  name         String
   menuItem     MenuItem[]
   quantity     Int?
   price        Int
@@ -120,6 +121,7 @@ model OrderItem {
 
 model Address {
   id        String    @id @default(uuid())
+  label     String    @default("")
   city      String    @default("")
   street    String    @default("")
   pinCode   String    @default("")

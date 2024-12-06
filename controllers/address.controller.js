@@ -4,7 +4,7 @@ const createError = require("http-errors");
 const db = new PrismaClient();
 
 const create = async (req, res, next) => {
-  const { city, street, pinCode, userId } = req.body;
+  const { label, city, street, pinCode, userId } = req.body;
   try {
     if (!userId) {
       return next(createError(422, "User ID is required"));
@@ -13,7 +13,7 @@ const create = async (req, res, next) => {
       return next(createError(422, "Invalid input data"));
     }
     const address = await db.address.create({
-      data: { city, street, pinCode, userId },
+      data: { label, city, street, pinCode, userId },
     });
     const updatedAddress = await db.address.findMany({ where: { userId } });
     res.send({ message: "Address created successfully", data: updatedAddress });

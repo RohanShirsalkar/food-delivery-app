@@ -13,5 +13,5 @@ router.get("/city/:cityId", findByCityId);
 router.get("/:id", findById);
 router.get("/owner/:ownerId", findByOwnerId);
 router.get("/item-type/:itemType", findByItemType);
-router.get("/search-item/:query", findBySearchQuery);
+router.get("/search-item/:query/:location", findBySearchQuery);
 module.exports = router;

@@ -8,7 +8,7 @@ const db = new PrismaClient();
 // @rule Do not add item to cart if item from some other restaurant already exists.
 // @rule Only add item if it belongs to the same restaurant.
 const createCartItem = async (req, res, next) => {
-  const { cartId, menuItemId, restaurantId, quantity } = req.body;
+  const { cartId, menuItemId, restaurantId, quantity, name } = req.body;
   try {
     if (!cartId || !menuItemId || !restaurantId || !quantity) {
       return next(createError(422, "Invalid input data"));
@@ -38,6 +38,7 @@ const createCartItem = async (req, res, next) => {
       const cartItem = await db.cartItem.create({
         data: {
           cartId,
+          name,
           menuItemId,
           restaurantId,
           quantity,
@@ -82,6 +83,7 @@ const createCartItem = async (req, res, next) => {
           const cartItem = await db.cartItem.create({
             data: {
               cartId,
+              name,
               menuItemId,
               restaurantId,
               quantity,
